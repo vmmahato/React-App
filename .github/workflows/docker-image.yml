@@ -1,0 +1,49 @@
+name: Build and Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        run: |
+          docker compose build web-app
+
+      - name: Replace placeholders in docker-compose.yml
+        run: |
+          HOST="${{ secrets.VPS_HOST }}"
+          USERNAME="${{ secrets.VPS_USER }}"
+          # Remove newline characters from the SSH key
+          KEY=$(echo "${{ secrets.VPS_SSH_KEY }}" | tr -d '\n')
+          PORT="${{ secrets.VPS_PORT }}"
+
+          sed -i "s|\${HOST}|$HOST|g" docker-compose.yml
+          sed -i "s|\${USERNAME}|$USERNAME|g" docker-compose.yml
+          sed -i "s|\${KEY}|$KEY|g" docker-compose.yml
+          sed -i "s|\${PORT}|$PORT|g" docker-compose.yml
+        shell: bash
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          passphrase: ${{ secrets.VPS_KEY_PASSPHRASE }}
+          script: |
+            cd elearn
+            git pull
+            docker compose build web-app
+            docker compose up -d
