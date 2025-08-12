@@ -22,12 +22,13 @@ const theme = createTheme({
 });
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Suspense fallback='loading...'>
-        <RouterProvider router={router} />
-      </Suspense>
-    </ThemeProvider>
-  </StrictMode>
+  // <StrictMode>
+  //   <ThemeProvider theme={theme}>
+  //     <CssBaseline />
+  //     <Suspense fallback='loading...'>
+  //       <RouterProvider router={router} />
+  //     </Suspense>
+  //   </ThemeProvider>
+  // </StrictMode>
+  <h1>Welcome to Mamatatech</h1>
 );
