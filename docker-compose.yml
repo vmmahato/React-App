@@ -1,6 +1,6 @@
 services:
   web-app:
-    image: metalhead224/elearn:latest
+    image: vmmahato/elearn:latest
     restart: always
     build:
       context: .
@@ -10,9 +10,9 @@ services:
       - USERNAME=${USERNAME}
       - KEY=${KEY}
       - PORT=${PORT}
-      - VIRTUAL_HOST=ecosennov.com
-      - LETSENCRYPT_HOST=ecosennov.com
-      - LETSENCRYPT_EMAIL=suman.osti401@gmail.com
+      - VIRTUAL_HOST=mamatatech.com
+      - LETSENCRYPT_HOST=mamatatech.com
+      - LETSENCRYPT_EMAIL=bhimmahato31st@gmail.com
     ports:
       - 3000:80
     networks:
@@ -48,7 +48,7 @@ services:
       - html:/usr/share/nginx/html
       - acme:/etc/acme.sh
     environment:
-      - DEFAULT_EMAIL=suman.osti401@gmail.com
+      - DEFAULT_EMAIL=bhimmahato31st@gmail.com
       - NGINX_PROXY_CONTAINER=nginx-proxy
     depends_on:
       - nginx-proxy
