@@ -1,49 +1,26 @@
-name: Build and Deploy to VPS
+name: Deploy to VPS
 
-on:
-  push:
-    branches:
-      - main
+on: [push]
 
 jobs:
-  build_and_deploy:
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build Docker image
+      - name: Add SSH Key
         run: |
-          docker compose build web-app
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan 168.231.127.236 >> ~/.ssh/known_hosts
 
-      - name: Replace placeholders in docker-compose.yml
+      - name: Deploy via SSH
         run: |
-          HOST="${{ secrets.VPS_HOST }}"
-          USERNAME="${{ secrets.VPS_USER }}"
-          # Remove newline characters from the SSH key
-          KEY=$(echo "${{ secrets.VPS_SSH_KEY }}" | tr -d '\n')
-          PORT="${{ secrets.VPS_PORT }}"
-
-          sed -i "s|\${HOST}|$HOST|g" docker-compose.yml
-          sed -i "s|\${USERNAME}|$USERNAME|g" docker-compose.yml
-          sed -i "s|\${KEY}|$KEY|g" docker-compose.yml
-          sed -i "s|\${PORT}|$PORT|g" docker-compose.yml
-        shell: bash
-
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          passphrase: ${{ secrets.VPS_KEY_PASSPHRASE }}
-          script: |
-            cd elearn
-            git pull
-            docker compose build web-app
-            docker compose up -d
+          ssh -o StrictHostKeyChecking=no root@168.231.127.236 "
+            cd /var/www/elearn/React-App
+            git pull origin main
+            npm install
+            pm2 restart app
+          "
